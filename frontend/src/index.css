@@ -1,0 +1,45 @@
+:root {
+  --gradient: linear-gradient(135deg, #FF3381, #FF2200, #FF7D00, #FFFB00);
+  --pink:        #FF3381;
+  --red:         #FF2200;
+  --orange:      #FF7D00;
+  --yellow:      #FFFB00;
+  --bg:          #FFFFFF;
+  --text-dark:   #1a1a1a;
+  --text-gray:   #6b7280;
+  --border:      #f0f0f0;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--text-dark); font-family: system-ui, sans-serif; }
+
+.btn-brand {
+  background: var(--gradient);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 600;
+  cursor: pointer;
+  opacity: 1;
+  transition: opacity 0.2s;
+}
+.btn-brand:hover { opacity: 0.88; color: #fff; }
+
+.btn-outline-brand {
+  background: transparent;
+  color: var(--pink);
+  border: 2px solid var(--pink);
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btn-outline-brand:hover { opacity: 0.88; }
+
+.card-hover:hover {
+  box-shadow: 0 4px 20px rgba(255, 51, 129, 0.12);
+  transform: translateY(-2px);
+  transition: all 0.2s ease;
+}
