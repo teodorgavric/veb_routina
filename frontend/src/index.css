@@ -43,3 +43,11 @@ body { background: var(--bg); color: var(--text-dark); font-family: system-ui, s
   transform: translateY(-2px);
   transition: all 0.2s ease;
 }
+
+.form-control:focus {
+  border-color: #FF3381;
+  box-shadow: 0 0 0 0.2rem rgba(255, 51, 129, 0.15);
+}
+
+a.link-brand { color: #FF3381; text-decoration: none; }
+a.link-brand:hover { color: #FF3381; text-decoration: underline; }
