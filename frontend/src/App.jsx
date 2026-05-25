@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/common/ProtectedRoute';
 import './index.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -14,10 +15,6 @@ import CalendarPage from './pages/CalendarPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminPage from './pages/AdminPage';
 import NotFoundPage from './pages/NotFoundPage';
-
-function ProtectedRoute({ children }) {
-  return children;
-}
 
 function App() {
   return (
