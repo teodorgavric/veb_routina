@@ -3,6 +3,7 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { Flame, BarChart2, Target } from 'lucide-react';
 import { mockHabits } from '../utils/mockData';
+import Navbar from '../components/common/Navbar';
 
 const calendarStyles = `
   .react-calendar { border: 1px solid #f0f0f0 !important; border-radius: 12px !important; font-family: system-ui !important; width: 100% !important; padding: 8px; }
@@ -92,6 +93,8 @@ function CalendarPage() {
   };
 
   return (
+    <>
+    <Navbar />
     <div className="container pt-4 pb-5" style={{ maxWidth: '800px' }}>
       <style>{calendarStyles}</style>
 
@@ -155,6 +158,7 @@ function CalendarPage() {
         </div>
       )}
     </div>
+    </>
   );
 }
 

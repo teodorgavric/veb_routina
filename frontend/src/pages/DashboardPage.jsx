@@ -1,13 +1,14 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 import axios from 'axios';
 import { mockHabits, mockCompletedToday, mockWeekData, BADGE_DEFINITIONS } from '../utils/mockData';
 import BadgeAward from '../components/badges/BadgeAward';
 import ProgressRing from '../components/common/ProgressRing';
 import WeeklyWidget from '../components/common/WeeklyWidget';
 import HabitCard from '../components/habits/HabitCard';
-import QuickAddModal from '../components/habits/QuickAddModal';
 import OnboardingFlow from '../components/common/OnboardingFlow';
+import Navbar from '../components/common/Navbar';
 
 const FALLBACK_QUOTE = 'Small steps every day lead to big changes.';
 const FALLBACK_AUTHOR = 'Unknown';
@@ -22,7 +23,6 @@ function DashboardPage() {
   const [quoteAuthor, setQuoteAuthor] = useState(FALLBACK_AUTHOR);
   const [showBadge, setShowBadge] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 1000);
@@ -65,9 +65,9 @@ function DashboardPage() {
 
   const handleEdit = (id) => navigate(`/habits/${id}/edit`);
 
-  const handleAdd = (newHabit) => setHabits(prev => [newHabit, ...prev]);
-
   return (
+    <>
+    <Navbar  />
     <div className="container pt-4 pb-5">
       {/* Top row */}
       <div className="row g-4 mb-4">
@@ -128,6 +128,14 @@ function DashboardPage() {
           <option value="streak">Streak (High to Low)</option>
           <option value="category">Category</option>
         </select>
+        <button
+          className="btn-brand"
+          style={{ marginLeft: 'auto', padding: '8px 18px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}
+          onClick={() => navigate('/habits/new')}
+        >
+          <Plus size={16} />
+          Add Habit
+        </button>
       </div>
 
       {loading ? (
@@ -176,41 +184,11 @@ function DashboardPage() {
         <WeeklyWidget weekData={mockWeekData} habits={habits} />
       </div>
 
-      <button
-        onClick={() => setShowModal(true)}
-        style={{
-          position: 'fixed',
-          bottom: '32px',
-          right: '32px',
-          width: '56px',
-          height: '56px',
-          borderRadius: '50%',
-          background: 'var(--gradient)',
-          border: 'none',
-          color: '#fff',
-          fontSize: '1.5rem',
-          cursor: 'pointer',
-          boxShadow: '0 4px 16px rgba(255, 51, 129, 0.35)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 999,
-          lineHeight: 1,
-        }}
-        title="Quick add habit"
-      >
-        +
-      </button>
-
-      <QuickAddModal
-        show={showModal}
-        onHide={() => setShowModal(false)}
-        onAdd={handleAdd}
-      />
       {showBadge && (
         <BadgeAward badge={showBadge} onClose={() => setShowBadge(null)} />
       )}
     </div>
+    </>
   );
 }
 

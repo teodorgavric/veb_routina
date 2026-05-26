@@ -1,6 +1,7 @@
 import * as Icons from 'lucide-react';
 import { Lock, TrendingUp, Target, Flame, LayoutList } from 'lucide-react';
 import { mockUser, mockBadges, BADGE_DEFINITIONS, mockHabits } from '../utils/mockData';
+import Navbar from '../components/common/Navbar';
 
 const initials = mockUser.name
   .split(' ')
@@ -22,6 +23,8 @@ const SUMMARY_CARDS = [
 
 function ProfilePage() {
   return (
+    <>
+    <Navbar />
     <div className="container pt-4 pb-5" style={{ maxWidth: '900px' }}>
 
       <div style={{
@@ -121,6 +124,7 @@ function ProfilePage() {
         })}
       </div>
     </div>
+    </>
   );
 }
 

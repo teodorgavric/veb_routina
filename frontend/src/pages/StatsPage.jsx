@@ -11,6 +11,7 @@ import {
 import { Bar } from 'react-chartjs-2';
 import { TrendingUp, Target, Flame, LayoutList } from 'lucide-react';
 import { mockHabits, mockDailyStats } from '../utils/mockData';
+import Navbar from '../components/common/Navbar';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -64,6 +65,8 @@ useEffect(() => {
   }, []);
 
   return (
+    <>
+    <Navbar />
     <div className="container pt-4 pb-5">
 
       <div className="row g-3 mb-4">
@@ -196,6 +199,7 @@ useEffect(() => {
       </div>
 
     </div>
+    </>
   );
 }
 

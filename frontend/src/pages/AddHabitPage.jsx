@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import * as Icons from 'lucide-react';
-import { Check } from 'lucide-react';
+import { Check, ArrowLeft } from 'lucide-react';
 import { mockHabits, HABIT_TEMPLATES, CATEGORIES, CATEGORY_ICONS, HABIT_COLORS } from '../utils/mockData';
 
 const ICON_NAMES = [
@@ -58,6 +58,13 @@ function AddHabitPage() {
 
   return (
     <div style={{ maxWidth: '700px', margin: '0 auto', padding: '32px 16px 80px' }}>
+      <button
+        onClick={() => navigate('/dashboard')}
+        style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: '#6b7280', fontSize: '0.9rem', padding: '0', marginBottom: '20px' }}
+      >
+        <ArrowLeft size={16} />
+        Back to Dashboard
+      </button>
       <h4 style={{ fontWeight: 700, color: '#1a1a1a', marginBottom: '28px' }}>
         {isEdit ? 'Edit Habit' : 'Add New Habit'}
       </h4>
