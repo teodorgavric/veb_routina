@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { mockHabits, mockCompletedToday, mockWeekData } from '../utils/mockData';
+import { mockHabits, mockCompletedToday, mockWeekData, BADGE_DEFINITIONS } from '../utils/mockData';
+import BadgeAward from '../components/badges/BadgeAward';
 import ProgressRing from '../components/common/ProgressRing';
 import WeeklyWidget from '../components/common/WeeklyWidget';
 import HabitCard from '../components/habits/HabitCard';
@@ -19,7 +20,7 @@ function DashboardPage() {
   const [sortBy, setSortBy] = useState('date');
   const [quote, setQuote] = useState(FALLBACK_QUOTE);
   const [quoteAuthor, setQuoteAuthor] = useState(FALLBACK_AUTHOR);
-  const [showBadge, setShowBadge] = useState(false);
+  const [showBadge, setShowBadge] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
 
@@ -47,9 +48,14 @@ function DashboardPage() {
   }, [habits, sortBy]);
 
   const handleToggle = (id) => {
-    setCompletedToday(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    );
+    setCompletedToday(prev => {
+      if (prev.includes(id)) return prev.filter(x => x !== id);
+      const next = [...prev, id];
+      if (prev.length === 0 && next.length === 1) {
+        setShowBadge(BADGE_DEFINITIONS.find(b => b.type === 'first_step'));
+      }
+      return next;
+    });
   };
 
   const handleArchive = (id) => {
@@ -201,6 +207,9 @@ function DashboardPage() {
         onHide={() => setShowModal(false)}
         onAdd={handleAdd}
       />
+      {showBadge && (
+        <BadgeAward badge={showBadge} onClose={() => setShowBadge(null)} />
+      )}
     </div>
   );
 }
