@@ -6,6 +6,7 @@ import ProgressRing from '../components/common/ProgressRing';
 import WeeklyWidget from '../components/common/WeeklyWidget';
 import HabitCard from '../components/habits/HabitCard';
 import QuickAddModal from '../components/habits/QuickAddModal';
+import OnboardingFlow from '../components/common/OnboardingFlow';
 
 const FALLBACK_QUOTE = 'Small steps every day lead to big changes.';
 const FALLBACK_AUTHOR = 'Unknown';
@@ -100,6 +101,8 @@ function DashboardPage() {
           </div>
         </div>
       </div>
+
+      <OnboardingFlow habits={habits} completedToday={completedToday} />
 
       <div className="d-flex align-items-center gap-3 mb-3">
         <span style={{ color: '#6b7280', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>Sort by:</span>
