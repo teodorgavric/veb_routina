@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Users, LayoutList, CheckSquare, Award, Trash2 } from 'lucide-react';
 import Navbar from '../components/common/Navbar';
+import Footer from '../components/common/Footer';
 
 const STAT_CARDS = [
   { label: 'Total Users',   value: 5,  Icon: Users,       color: '#FF3381' },
@@ -127,8 +128,8 @@ function AdminPage() {
             </tbody>
           </table>
         </div>
-
       </div>
+      <Footer />
     </>
   );
 }

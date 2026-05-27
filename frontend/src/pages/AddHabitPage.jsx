@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import * as Icons from 'lucide-react';
 import { Check, ArrowLeft } from 'lucide-react';
 import { mockHabits, HABIT_TEMPLATES, CATEGORIES, CATEGORY_ICONS, HABIT_COLORS } from '../utils/mockData';
+import Navbar from '../components/common/Navbar';
+import Footer from '../components/common/Footer';
 
 const ICON_NAMES = [
   'Flame', 'Zap', 'Star', 'Heart', 'Coffee',
@@ -57,7 +59,10 @@ function AddHabitPage() {
   const clearError = (key) => setErrors(prev => { const e = { ...prev }; delete e[key]; return e; });
 
   return (
-    <div style={{ maxWidth: '700px', margin: '0 auto', padding: '32px 16px 80px' }}>
+    <>
+    <Navbar />
+    <div className="container pt-4 pb-5">
+    <div style={{ maxWidth: '700px', margin: '0 auto' }}>
       <button
         onClick={() => navigate('/dashboard')}
         style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: '#6b7280', fontSize: '0.9rem', padding: '0', marginBottom: '20px' }}
@@ -276,6 +281,9 @@ function AddHabitPage() {
         <button className="btn-brand" onClick={handleSubmit}>Save Habit</button>
       </div>
     </div>
+    </div>
+    <Footer />
+    </>
   );
 }
 

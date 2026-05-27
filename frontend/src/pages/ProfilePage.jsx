@@ -2,6 +2,7 @@ import * as Icons from 'lucide-react';
 import { Lock, TrendingUp, Target, Flame, LayoutList } from 'lucide-react';
 import { mockUser, mockBadges, BADGE_DEFINITIONS, mockHabits } from '../utils/mockData';
 import Navbar from '../components/common/Navbar';
+import Footer from '../components/common/Footer';
 
 const initials = mockUser.name
   .split(' ')
@@ -124,6 +125,7 @@ function ProfilePage() {
         })}
       </div>
     </div>
+    <Footer />
     </>
   );
 }

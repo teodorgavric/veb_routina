@@ -10,7 +10,7 @@ function OnboardingFlow({ habits, completedToday }) {
 
   const step1Done = habits.length > 0;
   const step2Done = completedToday.length > 0;
-  const step3Done = localStorage.getItem('routina_visited_stats') === 'true';
+  const step3Done = false; //localStorage.getItem('routina_visited_stats') === 'true';
 
   const doneCount = [step1Done, step2Done, step3Done].filter(Boolean).length;
   const percent = Math.round((doneCount / 3) * 100);
@@ -60,7 +60,6 @@ function OnboardingFlow({ habits, completedToday }) {
         {allDone ? "You're all set! 🎉" : 'Get started with Routina 👋'}
       </div>
 
-      {/* Progress bar */}
       <div style={{ height: '6px', background: '#f0f0f0', borderRadius: '3px', marginBottom: '20px', overflow: 'hidden' }}>
         <div style={{
           height: '100%',
@@ -71,7 +70,6 @@ function OnboardingFlow({ habits, completedToday }) {
         }} />
       </div>
 
-      {/* Steps */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         {steps.map((step, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>

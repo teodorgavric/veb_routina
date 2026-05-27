@@ -12,6 +12,7 @@ import { Bar } from 'react-chartjs-2';
 import { TrendingUp, Target, Flame, LayoutList } from 'lucide-react';
 import { mockHabits, mockDailyStats } from '../utils/mockData';
 import Navbar from '../components/common/Navbar';
+import Footer from '../components/common/Footer';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -197,8 +198,8 @@ useEffect(() => {
           </tbody>
         </table>
       </div>
-
     </div>
+    <Footer />
     </>
   );
 }

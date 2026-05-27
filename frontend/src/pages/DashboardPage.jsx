@@ -9,6 +9,7 @@ import WeeklyWidget from '../components/common/WeeklyWidget';
 import HabitCard from '../components/habits/HabitCard';
 import OnboardingFlow from '../components/common/OnboardingFlow';
 import Navbar from '../components/common/Navbar';
+import Footer from '../components/common/Footer';
 
 const FALLBACK_QUOTE = 'Small steps every day lead to big changes.';
 const FALLBACK_AUTHOR = 'Unknown';
@@ -188,6 +189,7 @@ function DashboardPage() {
         <BadgeAward badge={showBadge} onClose={() => setShowBadge(null)} />
       )}
     </div>
+    <Footer />
     </>
   );
 }
