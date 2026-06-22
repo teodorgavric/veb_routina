@@ -1,7 +1,7 @@
 import asyncHandler from '../middleware/asyncHandler.js';
 import User from '../models/userModel.js';
-//import Habit from '../models/habitModel.js';
-//import HabitLog from '../models/habitLogModel.js';
+import Habit from '../models/habitModel.js';
+import HabitLog from '../models/habitLogModel.js';
 //import Badge from '../models/badgeModel.js';
 import generateToken from '../utils/generateToken.js';
 
@@ -132,7 +132,7 @@ const getUsers = asyncHandler(async (req, res) => {
 
     const usersWithHabitCount = await Promise.all(
         users.map(async (user) => {
-            //const habitCount = await Habit.countDocuments({ user: user._id });
+            const habitCount = await Habit.countDocuments({ user: user._id });
             return {
                 ...user.toObject(),
                 habitCount: 0,
@@ -157,8 +157,8 @@ const deleteUser = asyncHandler(async (req, res) => {
             throw new Error('Cannot delete an admin user');
         }
 
-        //await Habit.deleteMany({ user: user._id });
-        //await HabitLog.deleteMany({ user: user._id });
+        await Habit.deleteMany({ user: user._id });
+        await HabitLog.deleteMany({ user: user._id });
         //await Badge.deleteMany({ user: user._id });
         await user.deleteOne();
 

@@ -7,6 +7,8 @@ dotenv.config();
 import connectDB from './config/db.js';
 import { notFound, errorHandler } from './middleware/errorHandler.js';
 import userRoutes from './routes/userRoutes.js';
+import habitRoutes from './routes/habitRoutes.js';
+import logRoutes from './routes/logRoutes.js';
 
 const port = process.env.PORT || 5000;
 connectDB();
@@ -22,6 +24,8 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/users', userRoutes);
+app.use('/api/habits', habitRoutes);
+app.use('/api/logs', logRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
