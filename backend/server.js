@@ -9,6 +9,8 @@ import { notFound, errorHandler } from './middleware/errorHandler.js';
 import userRoutes from './routes/userRoutes.js';
 import habitRoutes from './routes/habitRoutes.js';
 import logRoutes from './routes/logRoutes.js';
+import badgeRoutes from './routes/badgeRoutes.js';
+import statsRoutes from './routes/statsRoutes.js';
 
 const port = process.env.PORT || 5000;
 connectDB();
@@ -26,6 +28,8 @@ app.get('/', (req, res) => {
 app.use('/api/users', userRoutes);
 app.use('/api/habits', habitRoutes);
 app.use('/api/logs', logRoutes);
+app.use('/api/badges', badgeRoutes);
+app.use('/api/stats', statsRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

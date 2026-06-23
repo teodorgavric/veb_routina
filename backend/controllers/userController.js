@@ -2,7 +2,7 @@ import asyncHandler from '../middleware/asyncHandler.js';
 import User from '../models/userModel.js';
 import Habit from '../models/habitModel.js';
 import HabitLog from '../models/habitLogModel.js';
-//import Badge from '../models/badgeModel.js';
+import Badge from '../models/badgeModel.js';
 import generateToken from '../utils/generateToken.js';
 
 /**
@@ -132,10 +132,10 @@ const getUsers = asyncHandler(async (req, res) => {
 
     const usersWithHabitCount = await Promise.all(
         users.map(async (user) => {
-            const habitCount = await Habit.countDocuments({ user: user._id });
+            const habitCount = await Habit.countDocuments({ user: user._id, archivedAt: null });
             return {
                 ...user.toObject(),
-                habitCount: 0,
+                habitCount,
             };
         })
     );
@@ -159,7 +159,7 @@ const deleteUser = asyncHandler(async (req, res) => {
 
         await Habit.deleteMany({ user: user._id });
         await HabitLog.deleteMany({ user: user._id });
-        //await Badge.deleteMany({ user: user._id });
+        await Badge.deleteMany({ user: user._id });
         await user.deleteOne();
 
         res.json({ message: 'User removed' });
@@ -167,6 +167,22 @@ const deleteUser = asyncHandler(async (req, res) => {
         res.status(404);
         throw new Error('User not found');
     }
+});
+
+/**
+ * @desc    Get aggregate stats for the admin dashboard
+ * @route   GET /api/users/admin/stats
+ * @access  Private/Admin
+ */
+const getAdminStats = asyncHandler(async (req, res) => {
+    const today = new Date().toISOString().split('T')[0];
+
+    const totalUsers = await User.countDocuments({});
+    const totalHabits = await Habit.countDocuments({ archivedAt: null });
+    const totalLogsToday = await HabitLog.countDocuments({ date: today });
+    const totalBadges = await Badge.countDocuments({});
+
+    res.json({ totalUsers, totalHabits, totalLogsToday, totalBadges });
 });
 
 export {
@@ -177,4 +193,5 @@ export {
     updateUserProfile,
     getUsers,
     deleteUser,
+    getAdminStats,
 };

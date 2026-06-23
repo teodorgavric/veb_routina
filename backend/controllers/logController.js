@@ -2,13 +2,7 @@ import asyncHandler from '../middleware/asyncHandler.js';
 import HabitLog from '../models/habitLogModel.js';
 import Habit from '../models/habitModel.js';
 import { dateString } from '../utils/streakCalculator.js';
-
-/**
- * @desc    Check for newly earned badges (stub — implemented in a later commit)
- */
-const checkAndAwardBadges = async (userId) => {
-    return [];
-};
+import checkAndAwardBadges from '../utils/badgeChecker.js';
 
 /**
  * @desc    Get today's completed habit IDs for the logged-in user
