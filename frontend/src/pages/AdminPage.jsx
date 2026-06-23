@@ -1,29 +1,29 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Users, LayoutList, CheckSquare, Award, Trash2 } from 'lucide-react';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
+import api from '../utils/axiosInstance';
 
-const STAT_CARDS = [
-  { label: 'Total Users',   value: 5,  Icon: Users,       color: '#FF3381' },
-  { label: 'Total Habits',  value: 23, Icon: LayoutList,  color: '#FF7D00' },
-  { label: 'Logs Today',    value: 12, Icon: CheckSquare, color: '#FF3381' },
-  { label: 'Badges Earned', value: 8,  Icon: Award,       color: '#FF7D00' },
-];
+function AdminPage() { 
+  const [stats, setStats] = useState({ totalUsers: 0, totalHabits: 0, totalLogsToday: 0, totalBadges: 0 });
+  const [users, setUsers] = useState([]);
 
-const INITIAL_USERS = [
-  { id: 1, name: 'Teodor Gavrić',  email: 'teodor@mail.com', role: 'admin', since: 'Jan 2025', habits: 4 },
-  { id: 2, name: 'Ana Marić',      email: 'ana@mail.com',    role: 'user',  since: 'Feb 2025', habits: 6 },
-  { id: 3, name: 'Marko Jović',    email: 'marko@mail.com',  role: 'user',  since: 'Feb 2025', habits: 3 },
-  { id: 4, name: 'Maja Stoić',     email: 'maja@mail.com',   role: 'user',  since: 'Mar 2025', habits: 7 },
-  { id: 5, name: 'Stefan Đorđić', email: 'stefan@mail.com', role: 'user',  since: 'Mar 2025', habits: 3 },
-];
+  useEffect(() => {
+    api.get('/users/admin/stats').then(({ data }) => setStats(data));
+    api.get('/users').then(({ data }) => setUsers(data));
+  }, []);
 
-function AdminPage() {
-  const [users, setUsers] = useState(INITIAL_USERS);
+  const STAT_CARDS = [
+    { label: 'Total Users',   value: stats.totalUsers,     Icon: Users,       color: '#FF3381' },
+    { label: 'Total Habits',  value: stats.totalHabits,    Icon: LayoutList,  color: '#FF7D00' },
+    { label: 'Logs Today',    value: stats.totalLogsToday, Icon: CheckSquare, color: '#FF3381' },
+    { label: 'Badges Earned', value: stats.totalBadges,    Icon: Award,       color: '#FF7D00' },
+  ];
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Delete this user and all their data?')) {
-      setUsers(prev => prev.filter(u => u.id !== id));
+      await api.delete(`/users/${id}`);
+      setUsers(prev => prev.filter(u => u._id !== id));
     }
   };
 
@@ -86,7 +86,7 @@ function AdminPage() {
             </thead>
             <tbody>
               {users.map((user, i) => (
-                <tr key={user.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                <tr key={user._id} style={{ borderBottom: '1px solid #f0f0f0' }}>
                   <td style={{ padding: '14px 20px', border: 'none', verticalAlign: 'middle', color: '#6b7280', fontSize: '0.875rem' }}>
                     {i + 1}
                   </td>
@@ -109,14 +109,14 @@ function AdminPage() {
                     </span>
                   </td>
                   <td style={{ padding: '14px 20px', border: 'none', verticalAlign: 'middle', color: '#6b7280', fontSize: '0.875rem' }}>
-                    {user.since}
+                    {new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                   </td>
                   <td style={{ padding: '14px 20px', border: 'none', verticalAlign: 'middle', color: '#1a1a1a', fontSize: '0.875rem' }}>
-                    {user.habits}
+                    {user.habitCount}
                   </td>
                   <td style={{ padding: '14px 20px', border: 'none', verticalAlign: 'middle' }}>
                     <button
-                      onClick={() => handleDelete(user.id)}
+                      onClick={() => handleDelete(user._id)}
                       style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }}
                       title="Delete user"
                     >

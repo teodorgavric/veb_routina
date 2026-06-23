@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import axios from 'axios';
-import { mockHabits, mockCompletedToday, mockWeekData, BADGE_DEFINITIONS } from '../utils/mockData';
+import api from '../utils/axiosInstance';
+import { BADGE_DEFINITIONS } from '../utils/mockData';
 import BadgeAward from '../components/badges/BadgeAward';
 import ProgressRing from '../components/common/ProgressRing';
 import WeeklyWidget from '../components/common/WeeklyWidget';
@@ -13,12 +14,14 @@ import Footer from '../components/common/Footer';
 
 const FALLBACK_QUOTE = 'Small steps every day lead to big changes.';
 const FALLBACK_AUTHOR = 'Unknown';
+const DAY_MAP = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function DashboardPage() {
   const navigate = useNavigate();
 
-  const [habits, setHabits] = useState(mockHabits);
-  const [completedToday, setCompletedToday] = useState(mockCompletedToday);
+  const [habits, setHabits] = useState([]);
+  const [completedToday, setCompletedToday] = useState([]);
+  const [weekData, setWeekData] = useState({});
   const [sortBy, setSortBy] = useState('date');
   const [quote, setQuote] = useState(FALLBACK_QUOTE);
   const [quoteAuthor, setQuoteAuthor] = useState(FALLBACK_AUTHOR);
@@ -26,7 +29,23 @@ function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1000);
+    Promise.all([
+      api.get('/habits'),
+      api.get('/logs/today'),
+      api.get('/logs/week'),
+    ])
+      .then(([habitsRes, todayRes, weekRes]) => {
+        setHabits(habitsRes.data);
+        setCompletedToday(todayRes.data);
+
+        const labeled = {};
+        Object.entries(weekRes.data).forEach(([date, habitIds]) => {
+          const day = DAY_MAP[new Date(date + 'T00:00:00').getDay()];
+          labeled[day] = habitIds;
+        });
+        setWeekData(labeled);
+      })
+      .finally(() => setLoading(false));
 
     axios.get('https://api.quotable.io/random?tags=inspirational')
       .then(({ data }) => {
@@ -37,8 +56,6 @@ function DashboardPage() {
         setQuote(FALLBACK_QUOTE);
         setQuoteAuthor(FALLBACK_AUTHOR);
       });
-
-    return () => clearTimeout(timer);
   }, []);
 
   const sortedHabits = useMemo(() => {
@@ -48,18 +65,31 @@ function DashboardPage() {
     return arr.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
   }, [habits, sortBy]);
 
-  const handleToggle = (id) => {
-    setCompletedToday(prev => {
-      if (prev.includes(id)) return prev.filter(x => x !== id);
-      const next = [...prev, id];
-      if (prev.length === 0 && next.length === 1) {
-        setShowBadge(BADGE_DEFINITIONS.find(b => b.type === 'first_step'));
+  const handleToggle = async (id) => {
+    if (completedToday.includes(id)) {
+      try {
+        await api.delete(`/logs/${id}`);
+        setCompletedToday(prev => prev.filter(x => x !== id));
+      } catch (err) {
       }
-      return next;
-    });
+      return;
+    }
+
+    try {
+      const { data } = await api.post('/logs', { habitId: id });
+
+      setCompletedToday(prev => [...prev, id]);
+
+      if (data.newBadges?.length > 0) {
+        const def = BADGE_DEFINITIONS.find(b => b.type === data.newBadges[0].type);
+        if (def) setShowBadge(def);
+      }
+    } catch (err) {
+    }
   };
 
-  const handleArchive = (id) => {
+  const handleArchive = async(id) => {
+    await api.patch(`/habits/${id}/archive`);
     setHabits(prev => prev.filter(h => h._id !== id));
     setCompletedToday(prev => prev.filter(x => x !== id));
   };
@@ -182,7 +212,7 @@ function DashboardPage() {
       )}
 
       <div style={{ marginTop: '40px' }}>
-        <WeeklyWidget weekData={mockWeekData} habits={habits} />
+        <WeeklyWidget weekData={weekData} habits={habits} />
       </div>
 
       {showBadge && (

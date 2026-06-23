@@ -97,4 +97,28 @@ const createLog = asyncHandler(async (req, res) => {
     res.status(201).json({ log, newBadges });
 });
 
-export { getTodayLogs, getWeekLogs, getAllLogs, getHabitLogs, createLog };
+/**
+ * @desc    Delete today's log entry for a habit (un-complete)
+ * @route   DELETE /api/logs/:habitId
+ * @access  Private
+ */
+const deleteLog = asyncHandler(async (req, res) => {
+    const today = new Date().toISOString().split('T')[0];
+
+    const log = await HabitLog.findOne({
+        habit: req.params.habitId,
+        user: req.user._id,
+        date: today,
+    });
+
+    if (!log) {
+        res.status(404);
+        throw new Error('Log not found');
+    }
+
+    await log.deleteOne();
+
+    res.json({ message: 'Log removed' });
+});
+
+export { getTodayLogs, getWeekLogs, getAllLogs, getHabitLogs, createLog, deleteLog };

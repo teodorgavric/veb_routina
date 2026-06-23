@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import * as Icons from 'lucide-react';
 import { Check, ArrowLeft } from 'lucide-react';
-import { mockHabits, HABIT_TEMPLATES, CATEGORIES, CATEGORY_ICONS, HABIT_COLORS } from '../utils/mockData';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
+import api from '../utils/axiosInstance';
+import { HABIT_TEMPLATES, CATEGORIES, CATEGORY_ICONS, HABIT_COLORS } from '../utils/mockData';
 
 const ICON_NAMES = [
   'Flame', 'Zap', 'Star', 'Heart', 'Coffee',
@@ -29,15 +30,15 @@ function AddHabitPage() {
 
   useEffect(() => {
     if (!isEdit) return;
-    const habit = mockHabits.find(h => h._id === id);
-    if (habit) {
+    api.get(`/habits/${id}`).then(({ data: habit }) => {
       setName(habit.name);
       setDescription(habit.description || '');
       setCategory(habit.category);
       setIcon(habit.icon);
       setColor(habit.color);
       setTargetDays(habit.targetDays ?? '');
-    }
+      setReminderTime(habit.reminderTime ?? '');
+    });
   }, [id, isEdit]);
 
   const applyTemplate = (tpl) => {
@@ -48,12 +49,32 @@ function AddHabitPage() {
     setErrors({});
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const errs = {};
     if (!name.trim()) errs.name = 'Habit name is required.';
     if (!category) errs.category = 'Please select a category.';
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
-    navigate('/dashboard');
+
+    const payload = {
+      name: name.trim(),
+      description,
+      category,
+      icon,
+      color,
+      targetDays: targetDays ? Number(targetDays) : undefined,
+      reminderTime,
+    };
+
+    try {
+      if (isEdit) {
+        await api.put(`/habits/${id}`, payload);
+      } else {
+        await api.post('/habits', payload);
+      }
+      navigate('/dashboard');
+    } catch (err) {
+      setErrors({ form: err.response?.data?.message || 'Could not save habit' });
+    }
   };
 
   const clearError = (key) => setErrors(prev => { const e = { ...prev }; delete e[key]; return e; });
@@ -275,6 +296,12 @@ function AddHabitPage() {
           Email reminders coming soon
         </div>
       </div>
+
+      {errors.form && (
+        <div className="alert alert-danger" role="alert" style={{ borderRadius: '8px', fontSize: '0.9rem' }}>
+          {errors.form}
+        </div>
+      )}
 
       <div className="d-flex gap-3">
         <button className="btn-outline-brand" onClick={() => navigate(-1)}>Cancel</button>

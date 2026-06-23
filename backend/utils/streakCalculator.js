@@ -11,7 +11,6 @@ const calculateCurrentStreak = async (HabitLog, habitId) => {
     const logDates = new Set(logs.map(l => l.date));
     let streak = 0;
     const d = new Date();
-    d.setDate(d.getDate() - 1);
     while (logDates.has(dateString(d))) {
         streak++;
         d.setDate(d.getDate() - 1);

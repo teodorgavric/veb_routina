@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../utils/axiosInstance';
 import logo from '../assets/images/routina-logo.svg';
 
 function LoginPage() {
@@ -11,7 +12,7 @@ function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -20,8 +21,13 @@ function LoginPage() {
       return;
     }
 
-    login({ name: 'Teodor', email, role: 'user' }, 'mock-token');
-    navigate('/dashboard');
+    try {
+      const { data } = await api.post('/users/login', { email, password });
+      login(data);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Login failed');
+    }
   };
 
   return (

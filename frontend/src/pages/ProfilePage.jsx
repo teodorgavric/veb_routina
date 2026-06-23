@@ -1,28 +1,74 @@
+import { useState, useEffect } from 'react';
 import * as Icons from 'lucide-react';
-import { Lock, TrendingUp, Target, Flame, LayoutList } from 'lucide-react';
-import { mockUser, mockBadges, BADGE_DEFINITIONS, mockHabits } from '../utils/mockData';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
-
-const initials = mockUser.name
-  .split(' ')
-  .map(w => w[0])
-  .join('')
-  .toUpperCase();
-
-const memberSince = new Date(mockUser.createdAt + 'T00:00:00')
-  .toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-
-const earnedMap = Object.fromEntries(mockBadges.map(b => [b.type, b]));
-
-const SUMMARY_CARDS = [
-  { label: 'Total Completions', value: '47',               Icon: TrendingUp, color: '#FF3381' },
-  { label: 'Success Rate',      value: '74%',              Icon: Target,     color: '#FF7D00' },
-  { label: 'Best Streak',       value: '12 days',       Icon: Flame,      color: '#FF7D00' },
-  { label: 'Habits Created',    value: mockHabits.length,  Icon: LayoutList, color: '#FF3381' },
-];
+import api from '../utils/axiosInstance';
+import { Lock, TrendingUp, Target, Flame, LayoutList } from 'lucide-react';
+import { BADGE_DEFINITIONS } from '../utils/mockData';
 
 function ProfilePage() {
+  const [user, setUser] = useState(null);
+  const [badges, setBadges] = useState([]);
+  const [habits, setHabits] = useState([]);
+  const [totalCompletions, setTotalCompletions] = useState(0);
+
+  useEffect(() => {
+    Promise.all([
+      api.get('/users/profile'),
+      api.get('/badges'),
+      api.get('/stats/habits'),
+      api.get('/logs/all'),
+    ]).then(([userRes, badgesRes, habitsRes, logsRes]) => {
+      setUser(userRes.data);
+      setBadges(badgesRes.data);
+      setHabits(habitsRes.data);
+      setTotalCompletions(logsRes.data.length);
+    });
+  }, []);
+
+  if (!user) {
+    return (
+      <>
+        <Navbar />
+        <div className="container pt-4 pb-5 text-center py-5">
+          <div
+            className="spinner-border"
+            role="status"
+            style={{ borderColor: '#FF3381', borderRightColor: 'transparent', width: '2rem', height: '2rem' }}
+          >
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
+  const initials = user.name
+    .split(' ')
+    .map(w => w[0])
+    .join('')
+    .toUpperCase();
+
+  const memberSince = new Date(user.createdAt)
+    .toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  const earnedMap = Object.fromEntries(badges.map(b => [b.type, b]));
+
+  const avgSuccessRate = habits.length
+    ? Math.round(habits.reduce((sum, h) => sum + h.successRate, 0) / habits.length)
+    : 0;
+  const bestStreak = habits.length
+    ? Math.max(...habits.map(h => h.longestStreak))
+    : 0;
+
+  const SUMMARY_CARDS = [
+    { label: 'Total Completions', value: totalCompletions,        Icon: TrendingUp, color: '#FF3381' },
+    { label: 'Success Rate',      value: `${avgSuccessRate}%`,    Icon: Target,     color: '#FF7D00' },
+    { label: 'Best Streak',       value: `${bestStreak} days`, Icon: Flame,      color: '#FF7D00' },
+    { label: 'Habits Created',    value: habits.length,           Icon: LayoutList, color: '#FF3381' },
+  ];
+
   return (
     <>
     <Navbar />
@@ -54,8 +100,8 @@ function ProfilePage() {
           {initials}
         </div>
         <div>
-          <h4 style={{ fontWeight: 700, color: '#1a1a1a', marginBottom: '4px' }}>{mockUser.name}</h4>
-          <div style={{ color: '#6b7280', fontSize: '0.9rem' }}>{mockUser.email}</div>
+          <h4 style={{ fontWeight: 700, color: '#1a1a1a', marginBottom: '4px' }}>{user.name}</h4>
+          <div style={{ color: '#6b7280', fontSize: '0.9rem' }}>{user.email}</div>
           <div style={{ color: '#6b7280', fontSize: '0.875rem', marginTop: '4px' }}>
             Member since {memberSince}
           </div>
@@ -116,7 +162,7 @@ function ProfilePage() {
                 </div>
                 {earned && (
                   <div style={{ color: '#FF7D00', fontSize: '0.8rem', fontWeight: 600 }}>
-                    Earned {new Date(earned.earnedAt + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    Earned {new Date(earned.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </div>
                 )}
               </div>

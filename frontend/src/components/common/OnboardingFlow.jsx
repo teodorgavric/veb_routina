@@ -1,16 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 function OnboardingFlow({ habits, completedToday }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const onboardingKey = `routina_onboarding_done_${user?._id}`;
+  const visitedStatsKey = `routina_visited_stats_${user?._id}`;
+
   const [visible, setVisible] = useState(
-    localStorage.getItem('routina_onboarding_done') !== 'true'
+    localStorage.getItem(onboardingKey) !== 'true'
   );
 
   const step1Done = habits.length > 0;
   const step2Done = completedToday.length > 0;
-  const step3Done = false; //localStorage.getItem('routina_visited_stats') === 'true';
+  const step3Done = localStorage.getItem(visitedStatsKey) === 'true';
 
   const doneCount = [step1Done, step2Done, step3Done].filter(Boolean).length;
   const percent = Math.round((doneCount / 3) * 100);
@@ -19,11 +24,11 @@ function OnboardingFlow({ habits, completedToday }) {
   useEffect(() => {
     if (!allDone) return;
     const t = setTimeout(() => {
-      localStorage.setItem('routina_onboarding_done', 'true');
+      localStorage.setItem(onboardingKey, 'true');
       setVisible(false);
     }, 3000);
     return () => clearTimeout(t);
-  }, [allDone]);
+  }, [allDone, onboardingKey]);
 
   if (!visible) return null;
 

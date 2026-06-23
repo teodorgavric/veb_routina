@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Navbar from '../components/common/Navbar';
+import Footer from '../components/common/Footer';
+import api from '../utils/axiosInstance';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { Flame, BarChart2, Target } from 'lucide-react';
-import { mockHabits } from '../utils/mockData';
-import Navbar from '../components/common/Navbar';
-import Footer from '../components/common/Footer';
 
 const calendarStyles = `
   .react-calendar { border: 1px solid #f0f0f0 !important; border-radius: 12px !important; font-family: system-ui !important; width: 100% !important; padding: 8px; }
@@ -28,11 +28,8 @@ const calendarStyles = `
 const today = new Date();
 today.setHours(0, 0, 0, 0);
 
-function dateHash(date, seed = '') {
-  const s = date.toISOString().split('T')[0] + seed;
-  let h = 0;
-  for (const c of s) h = (h * 31 + c.charCodeAt(0)) % 100;
-  return h;
+function dateKey(date) {
+  return date.toISOString().split('T')[0];
 }
 
 function isPast(date) {
@@ -40,24 +37,50 @@ function isPast(date) {
 }
 
 function CalendarPage() {
+  const [habits, setHabits] = useState([]);
+  const [logsByDate, setLogsByDate] = useState({});
   const [selectedHabit, setSelectedHabit] = useState('all');
   const [calValue, setCalValue] = useState(new Date());
 
+  useEffect(() => {
+    Promise.all([
+      api.get('/stats/habits'),
+      api.get('/logs/all'),
+    ]).then(([habitsRes, logsRes]) => {
+      setHabits(habitsRes.data);
+
+      const byDate = {};
+      logsRes.data.forEach(log => {
+        if (!byDate[log.date]) byDate[log.date] = [];
+        byDate[log.date].push(log.habit);
+      });
+      setLogsByDate(byDate);
+    });
+  }, []);
+
   const habit = selectedHabit !== 'all'
-    ? mockHabits.find(h => h._id === selectedHabit)
+    ? habits.find(h => h._id === selectedHabit)
     : null;
 
   const isAllCompleted = (date) => {
+    if (!isPast(date) || habits.length === 0) return false;
+    const loggedIds = logsByDate[dateKey(date)] || [];
+    return habits.every(h => loggedIds.includes(h._id));
+  };
+
+  const isHabitCompleted = (date, habitId) => {
     if (!isPast(date)) return false;
-    const h = selectedHabit === 'all'
-      ? dateHash(date)
-      : dateHash(date, selectedHabit);
-    return selectedHabit === 'all' ? h > 70 : h > 40;
+    const loggedIds = logsByDate[dateKey(date)] || [];
+    return loggedIds.includes(habitId);
+  };
+
+  const isHighlighted = (date) => {
+    return selectedHabit === 'all' ? isAllCompleted(date) : isHabitCompleted(date, selectedHabit);
   };
 
   const tileContent = ({ date, view }) => {
     if (view !== 'month') return null;
-    const show = selectedHabit === 'all' && isAllCompleted(date);
+    const show = isHighlighted(date);
     return (
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '3px' }}>
         <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: show ? '#FF3381' : 'transparent' }} />
@@ -67,7 +90,7 @@ function CalendarPage() {
 
   const tileClassName = ({ date, view }) => {
     if (view !== 'month') return null;
-    return isAllCompleted(date) ? 'completed-day' : null;
+    return isHighlighted(date) ? 'completed-day' : null;
   };
 
   const activeBtn = {
@@ -99,7 +122,6 @@ function CalendarPage() {
     <div className="container pt-4 pb-5" style={{ maxWidth: '800px' }}>
       <style>{calendarStyles}</style>
 
-      {/* View switcher */}
       <div className="d-flex align-items-center gap-3 mb-4 flex-wrap">
         <button
           style={selectedHabit === 'all' ? activeBtn : inactiveBtn}
@@ -114,7 +136,7 @@ function CalendarPage() {
           style={{ maxWidth: '220px', borderRadius: '8px', borderColor: '#f0f0f0', fontSize: '0.9rem', cursor: 'pointer' }}
         >
           <option value="">View specific habit…</option>
-          {mockHabits.map(h => (
+          {habits.map(h => (
             <option key={h._id} value={h._id}>{h.name}</option>
           ))}
         </select>
@@ -133,7 +155,7 @@ function CalendarPage() {
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', fontSize: '0.82rem', color: '#6b7280' }}>
         <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#FF3381', flexShrink: 0 }} />
-        {selectedHabit === 'all' ? 'All Habits Completed' : `${habit?.name} Completed`}
+        {selectedHabit === 'all' ? 'All Habits Completed' : `${habit?.name} completed`}
       </div>
 
       {habit && (

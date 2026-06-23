@@ -1,4 +1,7 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import Navbar from '../components/common/Navbar';
+import Footer from '../components/common/Footer';
+import api from '../utils/axiosInstance';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,32 +13,13 @@ import {
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { TrendingUp, Target, Flame, LayoutList } from 'lucide-react';
-import { mockHabits, mockDailyStats } from '../utils/mockData';
-import Navbar from '../components/common/Navbar';
-import Footer from '../components/common/Footer';
+import { useAuth } from '../context/AuthContext';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const formatDate = (dateStr) => {
   const d = new Date(dateStr + 'T00:00:00');
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-};
-
-const SUMMARY_CARDS = [
-  { label: 'Total Completions', value: '47', Icon: TrendingUp, color: '#FF3381' },
-  { label: 'Success Rate',      value: '74%', Icon: Target,     color: '#FF7D00' },
-  { label: 'Best Streak',       value: '12 Days', Icon: Flame, color: '#FF7D00' },
-  { label: 'Habits Created',    value: mockHabits.length, Icon: LayoutList, color: '#FF3381' },
-];
-
-const chartData = {
-  labels: mockDailyStats.map(d => formatDate(d.date)),
-  datasets: [{
-    data: mockDailyStats.map(d => d.count),
-    backgroundColor: '#FF3381',
-    borderRadius: 4,
-    borderSkipped: false,
-  }],
 };
 
 const chartOptions = {
@@ -61,9 +45,46 @@ const chartOptions = {
 };
 
 function StatsPage() {
-useEffect(() => {
-    localStorage.setItem('routina_visited_stats', 'true');
-  }, []);
+  const { user } = useAuth();
+  const [habits, setHabits] = useState([]);
+  const [dailyStats, setDailyStats] = useState([]);
+
+  useEffect(() => {
+    localStorage.setItem(`routina_visited_stats_${user?._id}`, 'true');
+
+    Promise.all([
+      api.get('/stats/daily'),
+      api.get('/stats/habits'),
+    ]).then(([dailyRes, habitsRes]) => {
+      setDailyStats(dailyRes.data);
+      setHabits(habitsRes.data);
+    });
+  }, [user]);
+
+  const totalCompletions = habits.reduce((sum, h) => sum + h.totalLogs, 0);
+  const avgSuccessRate = habits.length
+    ? Math.round(habits.reduce((sum, h) => sum + h.successRate, 0) / habits.length)
+    : 0;
+  const bestStreak = habits.length
+    ? Math.max(...habits.map(h => h.longestStreak))
+    : 0;
+
+  const SUMMARY_CARDS = [
+    { label: 'Total Completions', value: totalCompletions, Icon: TrendingUp, color: '#FF3381' },
+    { label: 'Success Rate',      value: `${avgSuccessRate}%`, Icon: Target,     color: '#FF7D00' },
+    { label: 'Best Streak',       value: `${bestStreak} days`, Icon: Flame, color: '#FF7D00' },
+    { label: 'Habits Created',    value: habits.length, Icon: LayoutList, color: '#FF3381' },
+  ];
+
+  const chartData = {
+    labels: dailyStats.map(d => formatDate(d.date)),
+    datasets: [{
+      data: dailyStats.map(d => d.count),
+      backgroundColor: '#FF3381',
+      borderRadius: 4,
+      borderSkipped: false,
+    }],
+  };
 
   return (
     <>
@@ -133,7 +154,7 @@ useEffect(() => {
             </tr>
           </thead>
           <tbody>
-            {mockHabits.map(habit => (
+            {habits.map(habit => (
               <tr key={habit._id} style={{ borderBottom: '1px solid #f0f0f0' }}>
                 <td style={{ padding: '14px 24px', border: 'none', verticalAlign: 'middle' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

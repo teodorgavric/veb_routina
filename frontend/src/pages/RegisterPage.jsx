@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../utils/axiosInstance';
 import logo from '../assets/images/routina-logo.svg';
 
 function RegisterPage() {
@@ -22,7 +23,7 @@ function RegisterPage() {
     return errs;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length > 0) {
@@ -30,8 +31,14 @@ function RegisterPage() {
       return;
     }
     setErrors({});
-    login({ name: name.trim(), email, role: 'user' }, 'mock-token');
-    navigate('/dashboard');
+
+    try {
+      const { data } = await api.post('/users', { name: name.trim(), email, password });
+      login(data);
+      navigate('/dashboard');
+    } catch (err) {
+      setErrors({ form: err.response?.data?.message || 'Registration failed' });
+    }
   };
 
   const fieldError = (key) =>
@@ -51,6 +58,12 @@ function RegisterPage() {
             <img src={logo} alt="Routina" style={{ height: '40px', marginBottom: '20px' }} />
             <h4 style={{ fontWeight: 700, color: '#1a1a1a', marginBottom: 0 }}>Create your account</h4>
           </div>
+
+          {errors.form && (
+            <div className="alert alert-danger" role="alert" style={{ borderRadius: '8px', fontSize: '0.9rem' }}>
+              {errors.form}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
